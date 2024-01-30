@@ -45,7 +45,62 @@ class AiPlayer(Player):
         self.initial_weapon = random_weapon_select()
     
     def weapon_selecting_strategy(self):
-        pass
+        default_move= random_weapon_select()
+        if (len(self.opponent_choices) == 0):
+            return default_move
+        #Check if single
+        is_single = True
+        for past_moves in range(len(self.opponent_choices)):
+            for current_move in range(past_moves):
+                if(self.opponent_choices[past_moves] != self.opponent_choices[current_move]):
+                    is_single = False
+                    break
+        #Check if switch
+        if (not is_single): #(not is_single)
+            is_switch=False
+            first_10_same = True
+            if len(self.opponent_choices) >= 10:
+                for move1 in range(10):
+                    if(self.opponent_choices[move1] != self.opponent_choices[0]):
+                        first_10_same = False
+                        break
+                if(first_10_same):
+                    is_switch = True
+        #Check if mimic
+        is_mimic = False
+        if ((not is_single) and (not is_switch)):
+            is_mimic = True
+
+        #counter single
+        if(is_single):
+            if(self.opponent_choices[0] == 0):
+                return 1
+            if(self.opponent_choices[0] == 1):
+                return 2
+            if(self.opponent_choices[0] == 2):
+                return 0
+        #counter switch
+        if(is_switch):
+            num_rounds=len(self.my_choices)
+            if(num_rounds % 10 == 0):
+                return default_move #He's going to switch things up every 10th round
+            else:                   #If we know he's not switching things up, we can just counter his last move.
+                if(self.opponent_choices[-1] == 0):
+                    return 1
+                if(self.opponent_choices[-1] == 1):
+                    return 2
+                if(self.opponent_choices[-1] == 2):
+                    return 0
+        #counter mimic
+        if(is_mimic):
+            opponent_next_choice = self.my_choices[-1] #He's copying me, so we can tell what move he'll use/
+            if( opponent_next_choice == 0):
+                return 1
+            if( opponent_next_choice == 1):
+                return 2
+            if( opponent_next_choice == 2):
+                return 0
+        return default_move
 
 
 if __name__ == '__main__':
