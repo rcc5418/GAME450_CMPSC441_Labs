@@ -20,16 +20,38 @@ from pathlib import Path
 sys.path.append(str((Path(__file__) / ".." / ".." / "..").resolve().absolute()))
 
 from src.lab5.landscape import elevation_to_rgba
+from src.lab5.landscape import get_elevation
 
 
-def game_fitness(cities, idx, elevation, size):
-    fitness = 0.0001  # Do not return a fitness of 0, it will mess up the algorithm.
+
+def game_fitness(solution, idx, elevation, size):
+    fitness = 100  # Do not return a fitness of 0, it will mess up the algorithm.
     """
     Create your fitness function here to fulfill the following criteria:
     1. The cities should not be under water
     2. The cities should have a realistic distribution across the landscape
     3. The cities may also not be on top of mountains or on top of each other
     """
+
+    city_locations = solution_to_cities(solution, size)
+    
+    for city in city_locations:
+        if elevation[city[0],city[1]] > .9: #This will check if the city is very high and subtract from the fitness value
+             fitness -= .1
+        if elevation[city[0],city[1]] < .1: #This will check if the city is very low (in water or a canyon) and subtract from the fitness value
+             fitness -= .1
+        if (elevation[city[0],city[1]] > .4) and (elevation[city[0],city[1]] < .7): #This will adjust the fitness value to prefer cities in a 'goldilocks' elevation, not too high or too low
+             fitness += .1
+        
+        too_close_x = size[0]/10
+        too_close_y = size[1]/10
+        for other_city in city_locations:
+            #These if statements will check if any other city is too close to the current city
+            #and adjust the fitness value to reflect it if any cities are too close
+            if (abs(other_city[0] - city[0]) <= too_close_x) and (abs(other_city[1] - city[1]) <= too_close_y):
+                if other_city.all() != city.all():        
+                        fitness -= .1
+
     return fitness
 
 
@@ -116,8 +138,8 @@ if __name__ == "__main__":
     elevation = []
     """ initialize elevation here from your previous code"""
     # normalize landscape
-    elevation = np.array(elevation)
-    elevation = (elevation - elevation.min()) / (elevation.max() - elevation.min())
+    elevation_array = get_elevation(size)
+    elevation = (elevation_array - elevation_array.min()) / (elevation_array.max() - elevation_array.min())
     landscape_pic = elevation_to_rgba(elevation)
 
     # setup fitness function and GA
@@ -127,8 +149,8 @@ if __name__ == "__main__":
     fitness_function, ga_instance = setup_GA(fitness, n_cities, size)
 
     # Show one of the initial solutions.
-    cities = ga_instance.initial_population[0]
-    cities = solution_to_cities(cities, size)
+    rand_solution = ga_instance.initial_population[0]
+    cities = solution_to_cities(rand_solution, size)
     show_cities(cities, landscape_pic)
 
     # Run the GA to optimize the parameters of the function.
@@ -137,8 +159,8 @@ if __name__ == "__main__":
     print("Final Population")
 
     # Show the best solution after the GA finishes running.
-    cities = ga_instance.best_solution()[0]
-    cities_t = solution_to_cities(cities, size)
+    best_solution = ga_instance.best_solution()[0]
+    cities_t = solution_to_cities(best_solution, size)
     plt.imshow(landscape_pic, cmap="gist_earth")
     plt.plot(cities_t[:, 1], cities_t[:, 0], "r.")
     plt.show()
