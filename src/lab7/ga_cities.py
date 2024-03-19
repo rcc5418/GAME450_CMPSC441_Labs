@@ -23,9 +23,8 @@ from src.lab5.landscape import elevation_to_rgba
 from src.lab5.landscape import get_elevation
 
 
-
 def game_fitness(solution, idx, elevation, size):
-    fitness = 100  # Do not return a fitness of 0, it will mess up the algorithm.
+    fitness = 0.0001  # Do not return a fitness of 0, it will mess up the algorithm.
     """
     Create your fitness function here to fulfill the following criteria:
     1. The cities should not be under water
@@ -143,14 +142,14 @@ if __name__ == "__main__":
     landscape_pic = elevation_to_rgba(elevation)
 
     # setup fitness function and GA
-    fitness = lambda cities, idx: game_fitness(
-        cities, idx, elevation=elevation, size=size
+    fitness = lambda solution, idx: game_fitness(
+        solution, idx, elevation=elevation, size=size
     )
     fitness_function, ga_instance = setup_GA(fitness, n_cities, size)
 
     # Show one of the initial solutions.
-    rand_solution = ga_instance.initial_population[0]
-    cities = solution_to_cities(rand_solution, size)
+    random_solution = ga_instance.initial_population[0]
+    cities = solution_to_cities(random_solution, size)
     show_cities(cities, landscape_pic)
 
     # Run the GA to optimize the parameters of the function.
