@@ -50,7 +50,9 @@ def run_turn(currentGame, player, opponent):
 
 def run_pygame_combat(combat_surface, screen, player_sprite):
     currentGame = Combat()
-    player = PyGameHumanCombatPlayer("Legolas")
+    #player = PyGameHumanCombatPlayer("Legolas")
+    #rcc: Changing code to implement the AI combat player:
+    player = PyGameAICombatPlayer("MrRoboto")
     """ Add a line below that will reset the player object
     to an instance of the PyGameAICombatPlayer class"""
 
@@ -58,6 +60,9 @@ def run_pygame_combat(combat_surface, screen, player_sprite):
     opponent_sprite = Sprite(
         AI_SPRITE_PATH, (player_sprite.sprite_pos[0] - 100, player_sprite.sprite_pos[1])
     )
+
+    #rcc: Added line to make debugging easy (lets the AI combat player win any battle easily)
+    opponent.health = 20
 
     # Main Game Loop
     while not currentGame.gameOver:

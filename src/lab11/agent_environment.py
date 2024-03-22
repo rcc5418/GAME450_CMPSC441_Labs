@@ -99,10 +99,12 @@ if __name__ == "__main__":
 
     player_sprite = Sprite(sprite_path, city_locations[start_city])
 
-    player = PyGameHumanPlayer()
-
+    #rcc: Implemeinting the AI player
+    #player = PyGameHumanPlayer()
+    player = PyGameAIPlayer()   
     """ Add a line below that will reset the player variable to 
     a new object of PyGameAIPlayer class."""
+    
 
     state = State(
         current_city=start_city,
