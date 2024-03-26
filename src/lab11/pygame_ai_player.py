@@ -1,5 +1,10 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
+
 import pygame
-from turn_combat import CombatPlayer
+from lab11.turn_combat import CombatPlayer
 import time
 import random
 
@@ -10,6 +15,7 @@ class PyGameAIPlayer:
         pass
 
     def selectAction(self, state):
+        #Closely following the structure of pygame_human_player.py
         for event in pygame.event.get():
             if state.current_city != 9:
                 return ord(str(state.current_city + 1))
