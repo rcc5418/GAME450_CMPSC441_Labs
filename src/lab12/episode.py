@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
 from lab11.turn_combat import CombatPlayer, Combat, ComputerCombatPlayer
-from lab11.pygame_combat import run_pygame_combat, run_turn
+from lab11.pygame_combat import run_pygame_combat, run_turn, PyGameComputerCombatPlayer
 
 def run_episode(player1, player2):
     obsState = (player1.health, player2.health)
@@ -25,10 +25,17 @@ def run_episode(player1, player2):
     currentGame = Combat()
     while(player1.health != 0 and player2.health != 0):
             reward = run_turn(currentGame, player1, player2)
-            obsState = (player1.health, player2.health)
+            action = player1.weapon #mayhaps
+            # if player1.health < obsState[0]:
+            #     reward = -1
+            # elif player2.health < obsState[1]:
+            #     reward = 1
+            # elif (player1.health == obsState[0]) and (player2.health == obsState):
+            #     reward = 0
             resultList.append((obsState, action, reward))
-    print(resultList)
+            obsState = (player1.health, player2.health)
+    #print(resultList)
     return resultList
     pass
 
-run_episode(ComputerCombatPlayer(CombatPlayer), ComputerCombatPlayer(CombatPlayer))
+run_episode(ComputerCombatPlayer("Rando"), PyGameComputerCombatPlayer("Computer"))

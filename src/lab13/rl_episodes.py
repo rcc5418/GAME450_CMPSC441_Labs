@@ -19,7 +19,8 @@ from pathlib import Path
 sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
 from lab11.pygame_combat import PyGameComputerCombatPlayer
-from lab11.turn_combat import CombatPlayer
+from lab11.turn_combat import CombatPlayer, ComputerCombatPlayer
+from lab11.pygame_ai_player import PyGameAICombatPlayer
 from lab12.episode import run_episode
 
 from collections import defaultdict
@@ -42,13 +43,18 @@ class PyGamePolicyCombatPlayer(CombatPlayer):
         self.policy = policy
 
     def weapon_selecting_strategy(self):
+        #rcc: I was experiencing an error with the first turn looping forever, so I incorporated this random choice which'll come up sometimes
+        #if random.randint(0,33) == 3:
+        #    self.weapon = random.randint(0, 2)
+        #    return self.weapon
+        #print(self.current_env_state)
         self.weapon = self.policy[self.current_env_state]
         return self.weapon
 
 
 def run_random_episode(player, opponent):
-    player.health = random.choice(range(10, 110, 10))
-    opponent.health = random.choice(range(10, 110, 10))
+    # player.health = random.choice(range(10, 110, 10))
+    # opponent.health = random.choice(range(10, 110, 10))
     return run_episode(player, opponent)
 
 
@@ -74,6 +80,26 @@ def run_episodes(n_episodes):
         Return the action values as a dictionary of dictionaries where the keys are states and 
             the values are dictionaries of actions and their values.
     '''
+    action_values = {}
+    for i in range (n_episodes):
+        episode = run_random_episode(PyGameRandomCombatPlayer("PLAYER1"), PyGameComputerCombatPlayer("PLAYER2"))
+        episode_history = get_history_returns(episode)
+
+        for i,(state,action,reward) in enumerate(episode):
+            if (state not in action_values):
+                action_values[state] = {}
+                action_values[state][action] = []
+            if (action not in action_values[state]):
+                action_values[state][action] = []
+            action_values[state][action].append(episode_history[state][action])
+
+    avgSum = 0
+    avg = 0
+    for state in action_values:
+        for action in action_values[state]:   
+            #avgSum = sum(action_values[state][action])
+            avg = sum(action_values[state][action]) / len(action_values[state][action])
+            action_values[state][action] = avg
 
     return action_values
 
@@ -85,13 +111,15 @@ def get_optimal_policy(action_values):
     return optimal_policy
 
 
-def test_policy(policy):
+def test_policy(thePolicy):
     names = ["Legolas", "Saruman"]
     total_reward = 0
-    for _ in range(100):
-        player1 = PyGamePolicyCombatPlayer(names[0], policy)
+    for _ in range(100):#for _ in range(100):
+        player1 = PyGamePolicyCombatPlayer(name = names[0], policy = thePolicy)
         player2 = PyGameComputerCombatPlayer(names[1])
         players = [player1, player2]
+        # player1.current_env_state = (player1.health,player2.health)
+        # print(player1.current_env_state)
         total_reward += sum(
             [reward for _, _, reward in run_episode(*players)]
         )
@@ -99,7 +127,7 @@ def test_policy(policy):
 
 
 if __name__ == "__main__":
-    action_values = run_episodes(10000)
+    action_values = run_episodes(1000) #action_values = run_episodes(10000)
     print(action_values)
     optimal_policy = get_optimal_policy(action_values)
     print(optimal_policy)
