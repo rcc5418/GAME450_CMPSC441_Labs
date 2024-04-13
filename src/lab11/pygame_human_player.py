@@ -4,6 +4,8 @@ from lab11.turn_combat import CombatPlayer
 
 class PyGameHumanPlayer:
     def __init__(self) -> None:
+        #rcc: I think I must implement the gold here
+        self.gold = 100
         pass
 
     def selectAction(self, state):

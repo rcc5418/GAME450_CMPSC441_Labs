@@ -1,6 +1,7 @@
 import sys
 import pygame
 from pathlib import Path
+import random
 
 sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
@@ -52,11 +53,11 @@ def run_turn(currentGame, player, opponent):
     return reward
 
 
-def run_pygame_combat(combat_surface, screen, player_sprite):
+def run_pygame_combat(combat_surface, screen, player_sprite, overworldPlayer): #rcc: I've added the overworld player as a parameter so that they can get a gold reward for winning a battle!
     currentGame = Combat()
-    #player = PyGameHumanCombatPlayer("Legolas")
-    #rcc: Changing code to implement the AI combat player:
-    player = PyGameAICombatPlayer("MrRoboto")
+    player = PyGameHumanCombatPlayer("Legolas")
+    #rcc: Change code to implement the AI combat player here (comment out line above):
+    #player = PyGameAICombatPlayer("MrRoboto")
     """ Add a line below that will reset the player object
     to an instance of the PyGameAICombatPlayer class"""
 
@@ -73,3 +74,7 @@ def run_pygame_combat(combat_surface, screen, player_sprite):
         draw_combat_on_window(combat_surface, screen, player_sprite, opponent_sprite)
 
         run_turn(currentGame, player, opponent)
+    battle_reward = random.randint(5,15)
+    print(f'Reward: {battle_reward} gold')
+    overworldPlayer.gold += battle_reward
+    print(f'Current gold: {overworldPlayer.gold}')

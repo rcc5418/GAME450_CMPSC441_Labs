@@ -5,6 +5,7 @@ from sprite import Sprite
 from pygame_combat import run_pygame_combat
 from pygame_human_player import PyGameHumanPlayer
 from lab5.landscape import get_landscape, elevation_to_rgba, get_elevation
+from lab7.ga_cities import game_fitness, setup_GA, solution_to_cities
 from pygame_ai_player import PyGameAIPlayer
 
 from pathlib import Path
@@ -20,6 +21,31 @@ get_combat_bg = lambda pixel_map: elevation_to_rgba(
 pygame.font.init()
 game_font = pygame.font.SysFont("Comic Sans MS", 15)
 
+def print_skull():
+    """
+    This function prints a skull
+    """
+    skull = r"""
+      _______
+     /       \
+    | X     X |
+    |    O    |
+     \_______/
+      |_|_|_|
+    """
+    print(skull)
+def print_smiley():
+    """
+    This function prints a smiley
+    """
+    smiley = r"""
+      _______
+     /       \
+    | /\   /\ |
+    |  \___/  |
+     \_______/
+    """
+    print(smiley)
 
 def get_landscape_surface(size):
     landscape = get_landscape(size)
@@ -93,19 +119,33 @@ if __name__ == "__main__":
 
     city_locations = get_randomly_spread_cities(size, len(city_names))
     routes = get_routes(city_locations)
+    #rcc: Here's where I'll implement the realistically spread cities, from lab 7
+    # normalize landscape
+    elevation_array = get_elevation(size)
+    elevation = (elevation_array - elevation_array.min()) / (elevation_array.max() - elevation_array.min())
+    # setup fitness function and GA
+    fitness = lambda solution, idx: game_fitness(
+        solution, idx, elevation=elevation, size=size
+    )
+    fitness_function, ga_instance = setup_GA(fitness, len(city_names), size)
+
+    ga_instance.run()
+    #ga_instance.plot_fitness() rcc: I think this was just showing the graph of the fitness over time, so I commented it out
+
+    best_solution = ga_instance.best_solution()[0]
+    city_locations = solution_to_cities(best_solution, size)
+    routes = get_routes(city_locations)
 
     random.shuffle(routes)
     routes = routes[:10]
 
     player_sprite = Sprite(sprite_path, city_locations[start_city])
 
-    #rcc: Implemeinting the AI player
-    #player = PyGameHumanPlayer()
-    player = PyGameAIPlayer()   
-    """ Add a line below that will reset the player variable to 
-    a new object of PyGameAIPlayer class."""
+    #rcc: Implement the AI player here, if you'd like
+    player = PyGameHumanPlayer()
+    print(f'Current gold: {player.gold}')
+    #player = PyGameAIPlayer()   
     
-
     state = State(
         current_city=start_city,
         destination_city=start_city,
@@ -114,13 +154,15 @@ if __name__ == "__main__":
         cities=city_locations,
         routes=routes,
     )
-
+    steps = 0 #rcc: initial definition of the steps we'll use to calculate travel_cost
     while True:
         action = player.selectAction(state)
         if 0 <= int(chr(action)) <= 9:
             if int(chr(action)) != state.current_city and not state.travelling:
                 ''' 
                 Check if a route exist between the current city and the destination city.
+                rcc: I'm not sure if we're going to implement this? The way the map builds itself,
+                sometimes there just won't be a path to a certain city, so I'm really not sure.
                 '''
                 start = city_locations[state.current_city]
                 state.destination_city = int(chr(action))
@@ -141,22 +183,49 @@ if __name__ == "__main__":
             pygame.draw.line(screen, (255, 0, 0), *line)
 
         displayCityNames(city_locations, city_names)
+        
         if state.travelling:
+            steps += 1
             state.travelling = player_sprite.move_sprite(destination, sprite_speed)
-            state.encounter_event = random.randint(0, 1000) < 2
+            state.encounter_event = random.randint(0, 1000) < 2 #rcc: disable battles for debugging here
+            if random.randint(0, 1000) < 2: #The player will randomly lose gold when travelling
+                loss = random.randint(1,10)
+                player.gold -= loss
+                print(f'Encountered a toll-gate! Paid out {loss} gold.')
+            if random.randint(0, 1000) < 2: #The player will randomly find gold on the ground.
+                gain = random.randint(1,10)
+                player.gold += gain
+                print(f'You found {gain} gold on the ground!')
+            if player.gold <= 0: #If the player runs out of gold, the game will end.
+                print('------------------------')
+                print('You ran out of money! You spend the rest of your days in destitution, miserable.')
+                print_skull()
+                print('------------------------')
+                pygame.quit()
+                quit()
+                pass
             if not state.travelling:
                 print('Arrived at', state.destination_city)
+                #rcc: Here, I'm calculating the loss of gold just from traveling. As in, supplies bought with gold and stuff like that. Probably have to mess with the numbers to be balanced and whatnot.
+                travel_cost = int(steps/15)
+                print(f'Travel cost: {travel_cost}')
+                player.gold -= travel_cost
+                print(f'Current gold: {player.gold}')
+                steps = 0
 
         if not state.travelling:
             encounter_event = False
             state.current_city = state.destination_city
 
         if state.encounter_event:
-            run_pygame_combat(combat_surface, screen, player_sprite)
+            run_pygame_combat(combat_surface, screen, player_sprite, player)
             state.encounter_event = False
         else:
             player_sprite.draw_sprite(screen)
         pygame.display.update()
         if state.current_city == end_city:
+            print('------------------------')
             print('You have reached the end of the game!')
+            print_smiley()
+            print('------------------------')
             break
