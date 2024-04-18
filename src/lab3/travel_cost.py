@@ -55,7 +55,7 @@ def get_route_cost(route_coordinate, game_map):
         #print(start_coord) (Was included for testing)
         path.append(tuple(start_coord))
     
-    return round(game_map[tuple(zip(*path))].sum(),2) # round() function concatenates to two decimal places, like US currency.
+    return round(game_map[tuple(zip(*path))].sum()/10,2) # round() function concatenates to two decimal places, like US currency. Also, dividing by 10 since the costs seemed pretty pricey.
     pass 
 
 
@@ -89,6 +89,7 @@ def main():
 
     n_cities = len(city_names)
     game_map = generate_terrain(map_size)
+    print(game_map)
     print(f'Map size: {game_map.shape}')
 
     city_locations = get_randomly_spread_cities(map_size, n_cities)
@@ -97,6 +98,7 @@ def main():
     routes = routes[:10]
     route_coordinates = route_to_coordinates(city_locations, city_names, routes)
 
+    print(route_coordinates)
     for route, route_coordinate in zip(routes, route_coordinates):
         print(f'Cost between {route[0]} and {route[1]}: {get_route_cost(route_coordinate, game_map)}')
 

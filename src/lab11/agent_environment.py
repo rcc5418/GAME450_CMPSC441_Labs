@@ -1,6 +1,7 @@
 import sys
 import pygame
 import random
+import numpy as np
 from sprite import Sprite
 from pygame_combat import run_pygame_combat
 from pygame_human_player import PyGameHumanPlayer
@@ -13,6 +14,7 @@ from pathlib import Path
 sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
 from lab2.cities_n_routes import get_randomly_spread_cities, get_routes
+from lab3.travel_cost import get_route_cost, generate_terrain, route_to_coordinates
 
 get_combat_bg = lambda pixel_map: elevation_to_rgba(
     get_elevation(pixel_map), "RdPu"
@@ -73,6 +75,15 @@ def displayCityNames(city_locations, city_names):
         text_surface = game_font.render(str(i) + " " + name, True, (0, 0, 150))
         screen.blit(text_surface, city_locations[i])
 
+#rcc: This function takes a route list, and two city indices and reeturns if the route between the two city locations.
+def route_exists(routes, cities, city_idx1, city_idx2):
+    city1 = tuple(cities[city_idx1])
+    city2 = tuple(cities[city_idx2])
+    for route in routes:
+        route = tuple(map(tuple, route))  # Convert NumPy arrays to tuples
+        if (city1 in route) and (city2 in route):
+            return True
+    return False
 
 class State:
     def __init__(
@@ -97,8 +108,10 @@ if __name__ == "__main__":
     black = 1, 1, 1
     start_city = 0
     end_city = 9
+    #end_city = random.randint(1,9)
     sprite_path = "assets/lego.png"
     sprite_speed = 1
+    landscape = get_landscape(size)
 
     screen = setup_window(width, height, "Game World Gen Practice")
 
@@ -134,10 +147,17 @@ if __name__ == "__main__":
 
     best_solution = ga_instance.best_solution()[0]
     city_locations = solution_to_cities(best_solution, size)
-    routes = get_routes(city_locations)
-
-    random.shuffle(routes)
-    routes = routes[:10]
+    
+    #rcc:Here's where I'll implement the routes from a prior lab. I altered the cities_n_routes file to create a minimum number of routes to connect all cities, then adding some random superflous routes.
+    routes = get_routes(city_locations, int(len(city_locations)/4))
+    route_list = []
+    for route in routes:
+        route_list.append(tuple(map(tuple, route)))
+    #game_map = generate_terrain(size)
+    #print(city_locations)
+    #print(routes)
+    #random.shuffle(routes)
+    #routes = routes[:10]
 
     player_sprite = Sprite(sprite_path, city_locations[start_city])
 
@@ -155,23 +175,30 @@ if __name__ == "__main__":
         routes=routes,
     )
     steps = 0 #rcc: initial definition of the steps we'll use to calculate travel_cost
+    #futire rcc: You dope! You need to implement the travel cost from that lab!
+    #But before that, you need to build the routes from the lab BEFORE that one!
+    #On retrospect, the travel cost lab proved too difficult to implement
     while True:
         action = player.selectAction(state)
         if 0 <= int(chr(action)) <= 9:
             if int(chr(action)) != state.current_city and not state.travelling:
-                ''' 
-                Check if a route exist between the current city and the destination city.
-                rcc: I'm not sure if we're going to implement this? The way the map builds itself,
-                sometimes there just won't be a path to a certain city, so I'm really not sure.
-                '''
-                start = city_locations[state.current_city]
-                state.destination_city = int(chr(action))
-                destination = city_locations[state.destination_city]
-                player_sprite.set_location(city_locations[state.current_city])
-                state.travelling = True
-                print(
-                    "Travelling from", state.current_city, "to", state.destination_city
-                )
+                start_city = state.current_city
+                destination_city = int(chr(action))
+                current_route = [(0,0),(0,0)]
+                #rcc: If statement to check if route exists:
+                if route_exists(routes, city_locations, start_city, destination_city):
+                    start = city_locations[state.current_city]
+                    current_route[0] = tuple(start)
+                    state.destination_city = int(chr(action))
+                    destination = city_locations[state.destination_city]
+                    current_route[1] = tuple(destination)
+                    player_sprite.set_location(city_locations[state.current_city])
+                    state.travelling = True
+                    print(
+                        "Travelling from", state.current_city, "to", state.destination_city
+                    )
+                else:
+                    print(f"There is no route from {city_names[start_city]} to {city_names[end_city]}")
 
         screen.fill(black)
         screen.blit(landscape_surface, (0, 0))
@@ -196,7 +223,7 @@ if __name__ == "__main__":
                 gain = random.randint(1,10)
                 player.gold += gain
                 print(f'You found {gain} gold on the ground!')
-            if player.gold <= 0: #If the player runs out of gold, the game will end.
+            if player.gold <= 0: #If the player runs out of gold while traveling, the game will end.
                 print('------------------------')
                 print('You ran out of money! You spend the rest of your days in destitution, miserable.')
                 print_skull()
@@ -207,11 +234,22 @@ if __name__ == "__main__":
             if not state.travelling:
                 print('Arrived at', state.destination_city)
                 #rcc: Here, I'm calculating the loss of gold just from traveling. As in, supplies bought with gold and stuff like that. Probably have to mess with the numbers to be balanced and whatnot.
-                travel_cost = int(steps/15)
+                #future rcc: This is where I'll bring in the travel cost calc from lab 3
+                #How I'm implementing it here ended up with very large travel costs, so I'm dialing it back by dividing.
+                travel_cost = int(get_route_cost(current_route, landscape) / 900)
+                if travel_cost < 5:
+                    travel_cost = random.randint(2,5)
                 print(f'Travel cost: {travel_cost}')
                 player.gold -= travel_cost
                 print(f'Current gold: {player.gold}')
                 steps = 0
+                if player.gold <= 0: #Repeating lose-con here
+                    print('------------------------')
+                    print('You ran out of money! You spend the rest of your days in destitution, miserable.')
+                    print_skull()
+                    print('------------------------')
+                    pygame.quit()
+                    quit()
 
         if not state.travelling:
             encounter_event = False

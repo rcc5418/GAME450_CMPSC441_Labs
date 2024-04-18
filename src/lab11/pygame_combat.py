@@ -74,7 +74,7 @@ def run_pygame_combat(combat_surface, screen, player_sprite, overworldPlayer): #
         draw_combat_on_window(combat_surface, screen, player_sprite, opponent_sprite)
 
         run_turn(currentGame, player, opponent)
-    battle_reward = random.randint(5,15)
+    battle_reward = random.randint(5,25)
     print(f'Reward: {battle_reward} gold')
     overworldPlayer.gold += battle_reward
     print(f'Current gold: {overworldPlayer.gold}')
