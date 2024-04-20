@@ -1,5 +1,4 @@
 import ollama
-
 sentenceList = [
     "The Dynastinae are among the largest of beetles, reaching more than 15 centimetres (6 inches) in length, but are completely harmless to humans because they cannot bite or sting.", 
     "Some species have been anecdotally claimed to lift up to 850 times their own weight.", 

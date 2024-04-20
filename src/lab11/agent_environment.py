@@ -15,6 +15,7 @@ sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
 from lab2.cities_n_routes import get_randomly_spread_cities, get_routes
 from lab3.travel_cost import get_route_cost, generate_terrain, route_to_coordinates
+from lab14.journal_generation import standard_journal, battle_journal, tired_journal, optimistic_journal
 
 get_combat_bg = lambda pixel_map: elevation_to_rgba(
     get_elevation(pixel_map), "RdPu"
@@ -112,6 +113,7 @@ if __name__ == "__main__":
     sprite_path = "assets/lego.png"
     sprite_speed = 1
     landscape = get_landscape(size)
+    journal = ""
 
     screen = setup_window(width, height, "Game World Gen Practice")
 
@@ -178,6 +180,7 @@ if __name__ == "__main__":
     #futire rcc: You dope! You need to implement the travel cost from that lab!
     #But before that, you need to build the routes from the lab BEFORE that one!
     #On retrospect, the travel cost lab proved too difficult to implement
+    battled = False
     while True:
         action = player.selectAction(state)
         if 0 <= int(chr(action)) <= 9:
@@ -236,6 +239,24 @@ if __name__ == "__main__":
                 #rcc: Here, I'm calculating the loss of gold just from traveling. As in, supplies bought with gold and stuff like that. Probably have to mess with the numbers to be balanced and whatnot.
                 #future rcc: This is where I'll bring in the travel cost calc from lab 3
                 #How I'm implementing it here ended up with very large travel costs, so I'm dialing it back by dividing.
+                if battled:
+                    current_journal = battle_journal()
+                    journal += current_journal
+                    print(current_journal)  
+                else:  
+                    if steps > 500:
+                        current_journal = tired_journal()
+                        journal += current_journal
+                        print(current_journal)
+                    elif steps < 100:
+                        current_journal = optimistic_journal()
+                        journal += current_journal
+                        print(current_journal)
+                    else:
+                        current_journal = standard_journal()
+                        journal += current_journal
+                        print(current_journal)
+                battled = False
                 travel_cost = int(get_route_cost(current_route, landscape) / 900)
                 if travel_cost < 5:
                     travel_cost = random.randint(2,5)
@@ -257,6 +278,7 @@ if __name__ == "__main__":
 
         if state.encounter_event:
             run_pygame_combat(combat_surface, screen, player_sprite, player)
+            battled = True
             state.encounter_event = False
         else:
             player_sprite.draw_sprite(screen)
@@ -265,5 +287,7 @@ if __name__ == "__main__":
             print('------------------------')
             print('You have reached the end of the game!')
             print_smiley()
+            print('Complete Journal:')
+            print(journal)
             print('------------------------')
             break
