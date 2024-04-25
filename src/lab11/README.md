@@ -76,3 +76,13 @@ while running:
 # Quit Pygame
 pygame.quit()
 ```
+
+# Final Project Report
+For my AI techninque, I implemented a pretrained Hugging Face GPT 2 model that predicts the next token, and created sets of boilerplate prompts that had to do with Oillill's journeys. Either it's an uneventful prompt, a prompt about after a long day, or a short day, or a prompt involving a bandit attack, if Oillill battled. The generations themselves are kind of nonsensical, but they grew on me, I find them kind of charming (The GPT4 model from OpenAI cost money to use).
+Other features I added:
+    Gold. The player starts with 100 gold and has to pay a certain traveling fee whenever they go from one city to another.
+    Additionally, there is a random chance of finding/losing gold on the walk to any city, as well as a gold reward recieved from winning a battle.
+
+    AI player. At the start of the game, the user is prompted to choose whether or not they'd like to control Oillill, or let an AI control them. If the AI takes over, then they'll travel randomly from city to city (as I changed the end city to be random) and choose their weapons from a pregenerated dictionary form lab 13 (I couldn't actually import stuff from lab13 since it would've created a circular import cycle).
+
+Important Note: I had to dig into my environments pygad.py file and change where it has numpy.int and numpy.float since I was getting errors. I PROMISE the game runs completely, it's nothing wrong with my code (Much time spent debugging! :) ).

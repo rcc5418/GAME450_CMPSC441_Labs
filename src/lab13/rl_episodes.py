@@ -41,6 +41,8 @@ class PyGamePolicyCombatPlayer(CombatPlayer):
     def __init__(self, name, policy):
         super().__init__(name)
         self.policy = policy
+        print(self.policy)
+        print("The Policy ^")
 
     def weapon_selecting_strategy(self):
         #rcc: I was experiencing an error with the first turn looping forever, so I incorporated this random choice which'll come up sometimes

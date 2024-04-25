@@ -74,4 +74,4 @@ def optimistic_journal():
 #print(standard_journal())
 #print(battle_journal())
 #print(tired_journal())
-print(optimistic_journal())
+#print(optimistic_journal())

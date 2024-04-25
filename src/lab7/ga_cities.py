@@ -96,7 +96,6 @@ def setup_GA(fitness_fn, n_cities, size):
         mutation_type=mutation_type,
         mutation_percent_genes=mutation_percent_genes,
     )
-
     return fitness_fn, ga_instance
 
 

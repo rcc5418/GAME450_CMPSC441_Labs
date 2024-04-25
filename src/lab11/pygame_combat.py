@@ -8,7 +8,8 @@ sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 from lab11.sprite import Sprite
 from lab11.turn_combat import CombatPlayer, Combat
 from lab11.pygame_ai_player import PyGameAICombatPlayer
-from lab11.pygame_human_player import PyGameHumanCombatPlayer
+from lab11.pygame_human_player import PyGameHumanPlayer, PyGameHumanCombatPlayer
+from lab11.pygame_ai_player import PyGameAIPlayer, PyGameAICombatPlayer
 
 AI_SPRITE_PATH = Path("assets/ai.png")
 
@@ -53,9 +54,16 @@ def run_turn(currentGame, player, opponent):
     return reward
 
 
-def run_pygame_combat(combat_surface, screen, player_sprite, overworldPlayer): #rcc: I've added the overworld player as a parameter so that they can get a gold reward for winning a battle!
+def run_pygame_combat(combat_surface, screen, player_sprite, overworldPlayer, identity): #rcc: I've added the overworld player as a parameter so that they can get a gold reward for winning a battle, as well as an identity parameter to track if a human is playing or not
     currentGame = Combat()
-    player = PyGameHumanCombatPlayer("Legolas")
+    if (identity == "Human"):
+        player = PyGameHumanCombatPlayer("Legolas")
+    elif (identity == "AI"):
+        player = PyGameAICombatPlayer("MrRoboto")
+    else:
+        player = PyGameHumanCombatPlayer("ThisShouldNeverRunButJustInCase")
+    
+    #player = PyGameHumanCombatPlayer("Legolas")
     #rcc: Change code to implement the AI combat player here (comment out line above):
     #player = PyGameAICombatPlayer("MrRoboto")
     """ Add a line below that will reset the player object

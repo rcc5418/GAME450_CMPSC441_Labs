@@ -4,9 +4,9 @@ import random
 import numpy as np
 from sprite import Sprite
 from pygame_combat import run_pygame_combat
-from pygame_human_player import PyGameHumanPlayer
 from lab5.landscape import get_landscape, elevation_to_rgba, get_elevation
 from lab7.ga_cities import game_fitness, setup_GA, solution_to_cities
+from pygame_human_player import PyGameHumanPlayer
 from pygame_ai_player import PyGameAIPlayer
 
 from pathlib import Path
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     black = 1, 1, 1
     start_city = 0
     end_city = 9
-    #end_city = random.randint(1,9)
+    end_city = random.randint(1,9)
     sprite_path = "assets/lego.png"
     sprite_speed = 1
     landscape = get_landscape(size)
@@ -163,10 +163,25 @@ if __name__ == "__main__":
 
     player_sprite = Sprite(sprite_path, city_locations[start_city])
 
-    #rcc: Implement the AI player here, if you'd like
-    player = PyGameHumanPlayer()
+
+    print("The brave and fiscally responsible elf Oillill has decided to set out in search of the perfect village to make his home! Can you find the correct village while keeping Oillill (and his wallet) healthy?")
+    #rcc: Player chooses whether to play or let the ai play:
+    print("Would you like to control Oillill, or let the AI play? (P for player, A for AI)")
+    playerChoice = input("Enter your choice (P or A): ")
+    identity = ""
+    while(playerChoice != "P" and playerChoice != "A"):
+        print("Invalid choice. Please choose either P or A.")
+        playerChoice = input("Enter your choice (P or A): ")
+    if(playerChoice == "P"):
+        player = PyGameHumanPlayer()
+        identity = "Human"
+        print("Great! Be careful with Oillill!")
+    if(playerChoice == "A"):
+        player = PyGameAIPlayer() 
+        identity = "AI"
+        print("Great! Wish Oillill luck!")
     print(f'Current gold: {player.gold}')
-    #player = PyGameAIPlayer()   
+      
     
     state = State(
         current_city=start_city,
@@ -277,7 +292,7 @@ if __name__ == "__main__":
             state.current_city = state.destination_city
 
         if state.encounter_event:
-            run_pygame_combat(combat_surface, screen, player_sprite, player)
+            run_pygame_combat(combat_surface, screen, player_sprite, player, identity)
             battled = True
             state.encounter_event = False
         else:
@@ -289,5 +304,6 @@ if __name__ == "__main__":
             print_smiley()
             print('Complete Journal:')
             print(journal)
+            print(f'Oillill was able to start his new life with {player.gold} in his pocket. What could be next for the adventurous young elf?')
             print('------------------------')
             break
